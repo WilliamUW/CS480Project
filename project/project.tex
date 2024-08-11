@@ -30,11 +30,11 @@
 \maketitle
 
 \begin{abstract} 
-This project addresses the challenge of predicting plant traits from citizen science photographs and ancillary data as part of the CS 480 Project Kaggle competition. I developed an iterative approach using ResNet50 for image feature extraction combined with ancillary data to predict six specific plant traits: X4, X11, X18, X26, X50, and X3112. My methodology evolved from an initial multi-output model to individual models for each trait, incorporating early stopping and hyperparameter tuning. The final approach achieved positive R scores for traits X4, X11, X26, X50 and X3221 - all traits except for X18. Key challenges included dealing with non-converging models for certain traits and adapting to varied trait distributions. This report details my data preprocessing, model architecture, training process, and results analysis. My code is available within the submitted .zip file to Learn as a Jupyter Notebook along with the training logs detailing the training loss and validation loss across 30 epochs. The project highlights the potential and challenges of using deep learning for plant trait prediction from diverse data sources.
+This project addresses the challenge of predicting plant traits from citizen science photographs and ancillary data as part of the CS 480 Project Kaggle competition. I developed an iterative approach using ResNet50 for image feature extraction combined with ancillary data to predict six specific plant traits. My methodology evolved from an initial multi-output model to individual models for each trait, incorporating early stopping and hyperparameter tuning. The final approach achieved positive R scores for 5 out of 6 traits. Key challenges included dealing with non-converging models for certain traits and adapting to varied trait distributions. This report details my data preprocessing, model architecture, training process, and results analysis. My code is available within the submitted .zip file to Learn as a Jupyter Notebook along with the training logs detailing the training loss and validation loss across 30 epochs. The project highlights the potential and challenges of using deep learning for plant trait prediction from diverse data sources.
 \end{abstract} 
 
 \section{Introduction}
-This project, part of the CS480/680 course Kaggle competition, aimed to predict six plant traits (X4, X11, X18, X26, X50, and X3112) from citizen science photographs and ancillary data. Building on recent research by Schiller et al. (2021), I developed an iterative approach to model creation, prioritizing simplicity to mitigate overfitting.
+My project aimed to predict six plant traits (X4, X11, X18, X26, X50, and X3112) from citizen science photographs and ancillary data. Building on recent research by Schiller et al. (2021), I developed an iterative approach to model creation, prioritizing simplicity to mitigate overfitting.
 
 My methodology centered on a pre-trained ResNet50 model for image feature extraction, integrated with ancillary environmental data. Initially, I attempted a single multi-output model, but later transitioned to individual models for each trait. This approach allowed me to leverage both visual and contextual information effectively.
 
@@ -51,33 +51,23 @@ Through this process, I achieved positive R scores for five out of the six trait
 
 \section{Initial Approach}
 
-My initial approach to this Kaggle project was guided by the principle of starting with the simplest possible model and increasing complexity only when necessary to mitigate overfitting. To begin, I conducted research by reviewing discussions on the course's Piazza forum, where I learned that pretrained ResNet models were yielding promising results for many students [1, 2].
+My initial approach to this Kaggle project was guided by the principle of starting with the simplest possible model and increasing complexity only when necessary to mitigate overfitting. To begin, I conducted research by reviewing discussions on the course's Piazza forum, where I learned that pretrained ResNet models were yielding promising results for many students [1, 2]. 
 
-Based on this information, I decided to use a pretrained ResNet model to extract features from the plant images.
+Based on this information, I decided to use a pretrained ResNet model to extract features from the plant images. However, I hypothesized that the ancillary data provided in the dataset might also contain valuable information for predicting plant traits. To test this, I designed a model that combined the ResNet-extracted image features with the 163 additional data points from the ancillary data.
 
-However, I hypothesized that the ancillary data provided in the dataset might also contain valuable information for predicting plant traits. To test this, I designed a model that combined the ResNet-extracted image features with the 163 additional data points from the ancillary data.
-
-For the first version (v1) of my model, I created a single neural network that used the pretrained ResNet for image feature extraction, concatenated these features with the ancillary data, and then attempted to predict all six plant traits simultaneously through a shared set of fully connected layers.
+For the first version (v1) of my model, I created a single neural network that used the pretrained ResNet for image feature extraction, concatenated these features with the ancillary data, and then attempted to predict all six plant traits simultaneously through a shared set of fully connected layers. 
 
 Unfortunately, this initial approach did not yield satisfactory results. The predictions generated by this model had a negative public score of -7.57886, performing much worse than a simple baseline model that predicted the mean value for each trait. This outcome suggested that the model was either underfitting due to insufficient complexity or overfitting to noise in the training data. 
 
 \section{Improved Approach}
 
-After the initial model's unsatisfactory performance, I revised my strategy to address the complexity of predicting multiple plant traits simultaneously. This led to the development of version 2 (V2) of my approach.
-
-\subsection{Individual Models for Each Trait}
-
-The key change in V2 was to train six separate models, each dedicated to predicting one of the plant traits (X4, X11, X18, X26, X50, and X3112). This approach allowed each model to specialize in capturing the unique relationships between the input data and its specific target trait.
+After the initial model's unsatisfactory performance, I revised my strategy to address the complexity of predicting multiple plant traits simultaneously. The key change was to train six separate models, each dedicated to predicting one of the six plant traits (X4, X11, X18, X26, X50, and X3112).
 
 I began by training a model to predict trait X4. This single-trait model showed significant improvement, achieving a positive R score of 0.03063. Encouraged by this result, I applied the same architecture to create individual models for the remaining five traits.
-
-\subsection{Model Training and Hyperparameters}
 
 Based on the convergence behavior observed in the X4 model, which stabilized around 20 epochs, I set the maximum number of epochs to 30 for all models. To prevent overfitting and optimize training time, I implemented early stopping with a patience of 7 epochs.
 
 Figure \ref{fig:trait_model_losses} illustrates the training and validation loss curves for each of the six trait models.
-
-\subsection{Model Performance and Adjustments}
 
 The individual model approach proved successful for most traits, with models for X4, X11, X26, X50, and X3112 all showing convergence in their loss curves. However, the model for trait X18 exhibited unstable behavior and failed to converge before early stopping was activated at epoch 17.
 
@@ -87,25 +77,13 @@ To address the poor performance of the X18 model, I used the mean value of X18 f
 
 \subsection{Preprocessing}
 
-Based on research indicating that ResNet performs optimally with 224x224 pixel images [3], I implemented a series of transformations on the original 128x128 pixel images:
-
-1. Resizing: Images were upscaled to 224x224 pixels using bicubic interpolation.
-
-2. Normalization: Pixel values were normalized using mean and standard deviation values typical for ImageNet-trained models.
-
-To mitigate the impact of outliers on model training, I implemented a data filtering step for each trait:
-
-1. Percentile Calculation: For each trait, I calculated the 0.1th and 98th percentiles.
-
-2. Data Filtering: Only data points falling between these percentiles were used for training.
-
-This approach helps to focus the model's learning on the most representative data points, reducing the influence of potential outliers or extreme values that might skew the model's predictions.
+1. Image Preprocessing: Upscaled images to 224x224 pixels using bicubic interpolation, optimizing for ResNet performance [3]. Normalized pixel values using ImageNet-typical mean and standard deviation.
+2. Ancillary Data Preprocessing: Removed outliers by filtering data outside 0.1th-98th percentiles for each trait. Applied StandardScaler for normalization, focusing model learning on representative data points and reducing skew from extreme values.
+Copy
 
 \subsection{Model Architecture}
 
-The core of my approach is a neural network model that combines image features extracted by a pretrained ResNet50 with ancillary data to predict individual plant traits. The model architecture is designed to be simple yet effective, balancing the need for feature extraction with the goal of avoiding overfitting. 
-
-Key components of this architecture include:
+The core of my approach is a neural network model that combines image features extracted by a pretrained ResNet50 with ancillary data to predict individual plant traits. The model architecture is designed to be simple yet effective, balancing the need for feature extraction with the goal of avoiding overfitting.  Key components of this architecture include:
 \begin{enumerate}
     \item \textbf{ResNet50 Backbone}: 
     \begin{itemize}
@@ -142,21 +120,7 @@ This architecture offers several advantages:
 
 \section{Analysis and Experimentation}
 
-To further analyze results, I graphed the distribution of training traits versus predicted traits. As seen in Figures \ref{fig:train_dist} and \ref{fig:pred_dist}, the distributions of values my model predicted were Gaussian for all traits. However, only three traits (X4, X11, X50) appeared to be Gaussian in distribution in the training dataset, with the other three (X18, X26, X3112) appearing exponential.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{train_distribution.png}
-    \caption{Distribution of Plant Trait Values in Training Data}
-    \label{fig:train_dist}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{predicted_distribution.png}
-    \caption{Distribution of Predicted Plant Trait Values}
-    \label{fig:pred_dist}
-\end{figure}
+To further analyze results, I graphed the distribution of training traits versus predicted traits. As seen in Figures \ref{fig:train_dist} and \ref{fig:pred_dist} in the Appendix, the distributions of values my model predicted were Gaussian for all traits. However, only three traits (X4, X11, X50) appeared to be Gaussian in distribution in the training dataset, with the other three (X18, X26, X3112) appearing exponential.
 
 It appears my model performed well on the traits with Gaussian distributions (X4, X11, X50) but struggled with predicting traits whose distributions were exponential (X18, X26, X3112).
 
@@ -217,8 +181,26 @@ In conclusion, despite the challenges encountered, the project achieved a signif
 
 \newpage
 
+\section{Appendix}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{train_distribution.png}
+    \caption{Distribution of Plant Trait Values in Training Data}
+    \label{fig:train_dist}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{predicted_distribution.png}
+    \caption{Distribution of Predicted Plant Trait Values}
+    \label{fig:pred_dist}
+\end{figure}
+
 \section*{Acknowledgement}
-Thank people who have helped or influenced you in this project. \Cref{fig:eqv_sde_traj} and \Cref{tab:fid-rot-mnist} are from \citet{LuSY24}.
+
+I extend my gratitude to the students on Piazza for their collaborative spirit and to the instructors for their guidance and support throughout this course!
+
+This challenging course has been an incredibly rewarding experience, and I'm grateful for the opportunity to have completed it successfully.
 
 \nocite{*}
 \printbibliography[title=References]
