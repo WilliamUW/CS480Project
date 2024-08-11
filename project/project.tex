@@ -76,7 +76,6 @@ To address the poor performance of the X18 model, I used the mean value of X18 f
 
 1. Image Preprocessing: Upscaled images to 224x224 pixels using bicubic interpolation, optimizing for ResNet performance [3]. Normalized pixel values using ImageNet-typical mean and standard deviation.
 2. Ancillary Data Preprocessing: Removed outliers by filtering data outside 0.1th-98th percentiles for each trait. Applied StandardScaler for normalization, focusing model learning on representative data points and reducing skew from extreme values.
-Copy
 
 \subsection{Model Architecture}
 
