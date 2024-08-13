@@ -27,15 +27,15 @@
 \maketitle
 
 \begin{abstract} 
-This project addresses the challenge of predicting plant traits from citizen science photographs and ancillary data as part of the CS 480 Project Kaggle competition. I developed an iterative approach using ResNet50 for image feature extraction combined with ancillary data to predict six specific plant traits. My methodology evolved from an initial multi-output model to individual models for each trait, incorporating early stopping and hyperparameter tuning. The final approach achieved positive R scores for 5 out of 6 traits. Key challenges included dealing with non-converging models for certain traits and adapting to varied trait distributions. This report details my data preprocessing, model architecture, training process, and results analysis. My code is available at \url{https://github.com/WilliamUW/CS480Project} as well as within the submitted .zip file to Learn as a Jupyter Notebook along with the training logs detailing the training loss and validation loss across 30 epochs. The project highlights the potential and challenges of using deep learning for plant trait prediction from diverse data sources.
+This project addresses the challenge of predicting plant traits from citizen science photographs and ancillary data as part of the CS 480 Project Kaggle competition. I developed an iterative approach using ResNet50 for image feature extraction combined with ancillary data to predict six specific plant traits. My methodology evolved from an initial multi-output model to individual models for each trait, incorporating early stopping and hyperparameter tuning. The final approach achieved positive R scores for 5 out of 6 traits. Key challenges included dealing with non-converging models for certain traits and adapting to varied trait distributions. This report details my data preprocessing, model architecture, training process, and results analysis. My code is available at \url{https://github.com/WilliamUW/CS480Project} as well as within the submitted .zip file to Learn as a Jupyter Notebook along with the training logs detailing the training loss and validation loss across 30 epochs. This project explores some of the potential and challenges of using deep learning for plant trait prediction from diverse data sources.
 \end{abstract} 
 
 \section{Introduction}
-My project aimed to predict six plant traits (X4, X11, X18, X26, X50, and X3112) from citizen science photographs and ancillary data. Building on recent research by Schiller et al. (2021), I developed an iterative approach to model creation, prioritizing simplicity to mitigate overfitting.
+My project aimed to predict six plant traits (X4, X11, X18, X26, X50, and X3112) from citizen science photographs and ancillary data. I developed an iterative approach to model creation, prioritizing simplicity to mitigate overfitting.
 
 My methodology centered on a pre-trained ResNet50 model for image feature extraction, integrated with ancillary environmental data. Initially, I attempted a single multi-output model, but later transitioned to individual models for each trait. This approach allowed me to leverage both visual and contextual information effectively.
 
-Through this process, I achieved positive R scores for five out of the six traits (X4, X11, X26, X50, and X3112), with only X18 proving challenging to predict accurately. This report details my data preprocessing, model architecture, training process, and results analysis, highlighting both the potential and challenges of using deep learning for plant trait prediction.
+Through this process, I achieved positive R scores for five out of the six traits, with only X18 proving challenging to predict accurately. This report details my data preprocessing, model architecture, training process, and results analysis, highlighting both the potential and challenges of using deep learning for plant trait prediction.
 
 \Cref{fig:trait_model_losses} summarizes the training and validation loss for all 6 models I trained to predict each plant trait.
 
@@ -58,7 +58,7 @@ Unfortunately, this initial approach did not yield satisfactory results. The pre
 
 \section{Improved Approach}
 
-After the initial model's unsatisfactory performance, I revised my strategy to address the complexity of predicting multiple plant traits simultaneously. The key change was to train six separate models, each dedicated to predicting one of the six plant traits (X4, X11, X18, X26, X50, and X3112).
+After the initial model's unsatisfactory performance, I revised my strategy to address the complexity of predicting multiple plant traits simultaneously. The key change was to train six separate models, each dedicated to predicting one of the six plant traits.
 
 I began by training a model to predict trait X4. This single-trait model showed significant improvement, achieving a positive R score of 0.03063. Encouraged by this result, I applied the same architecture to create individual models for the remaining five traits.
 
@@ -74,8 +74,10 @@ To address the poor performance of the X18 model, I used the mean value of X18 f
 
 \subsection{Preprocessing}
 
-1. Image Preprocessing: Upscaled images to 224x224 pixels using bicubic interpolation, optimizing for ResNet performance [3]. Normalized pixel values using ImageNet-typical mean and standard deviation.
-2. Ancillary Data Preprocessing: Removed outliers by filtering data outside 0.1th-98th percentiles for each trait. Applied StandardScaler for normalization, focusing model learning on representative data points and reducing skew from extreme values.
+\begin{enumerate}
+    \item Image Preprocessing: Upscaled images to 224x224 pixels using bicubic interpolation, optimizing for ResNet performance [3]. Normalized pixel values using ImageNet-typical mean and standard deviation.
+\item Ancillary Data Preprocessing: Removed outliers by filtering data outside 0.1th-98th percentiles for each trait. Applied StandardScaler for normalization, focusing model learning on representative data points and reducing skew from extreme values.
+\end{enumerate}
 
 \subsection{Model Architecture}
 
@@ -87,32 +89,23 @@ The core of my approach is a neural network model that combines image features e
         \item The final fully connected layer of ResNet50 is replaced with a new linear layer that outputs 256 features, allowing for more compact image representation.
     \end{itemize}
     
-    \item \textbf{Feature Combination}:
-    \begin{itemize}
-        \item The 256 image features are concatenated with 163 ancillary data points, resulting in a 419-dimensional feature vector.
-    \end{itemize}
+    \item \textbf{Feature Combination}: The 256 image features are concatenated with 163 ancillary data points, resulting in a 419-dimensional feature vector.
     
-    \item \textbf{Fully Connected Layers}:
-    \begin{itemize}
-        \item The combined features are passed through two fully connected layers:
+    \item \textbf{Fully Connected Layers}: The combined features are passed through two fully connected layers:
         \begin{itemize}
             \item The first layer (fc1) reduces the dimensionality from 419 to 128, with a ReLU activation.
             \item The second layer (fc2) produces the final output, a single value representing the predicted trait.
         \end{itemize}
-    \end{itemize}
     
-    \item \textbf{Single Trait Prediction}:
-    \begin{itemize}
-        \item The model is designed to predict a single trait, aligning with my approach of training separate models for each trait.
-    \end{itemize}
+    \item \textbf{Single Trait Prediction}: The model is designed to predict a single trait, aligning with my approach of training separate models for each trait.
 \end{enumerate}
 
 This architecture offers several advantages:
-\begin{itemize}
+\begin{enumerate}
     \item It leverages transfer learning through the pretrained ResNet50, benefiting from features learned on a large dataset.
     \item The combination of image and ancillary data allows the model to utilize all available information.
     \item The simplicity of the fully connected layers helps prevent overfitting while still allowing the model to learn non-linear relationships in the data.
-\end{itemize}
+\end{enumerate}
 
 \section{Analysis and Experimentation}
 
@@ -156,9 +149,9 @@ One of the most significant realizations was the substantial computational resou
 \subsection{Future Directions}
 
 \begin{itemize}
-    \item \textbf{Model Architecture}: Further experimentation with different layer configurations and model depths could potentially yield improved performance. Time constraints limited the extent of this exploration in the current project as I only had time to experiment with a reduced dataset.
+    \item \textbf{Model Architecture}: Further experimentation with different layer configurations and model depths could potentially yield improved performance. Time constraints limited the extent of this exploration in the current project as I only had time to experiment with a reduced dataset or train a model on the full dataset overnight.
     
-    \item \textbf{Data Preprocessing}: Normalizing ancillary and label values using StandardScaler; Investigating more sophisticated data transformation techniques, particularly for traits with non-Gaussian distributions, could enhance model accuracy.
+    \item \textbf{Data Preprocessing}: Investigating more sophisticated data transformation techniques, particularly for traits with non-Gaussian distributions, could enhance model accuracy.
     
     \item \textbf{Feature Engineering}: Deeper analysis of the relationships between ancillary data and plant traits might reveal more informative input features.
     
